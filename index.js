@@ -6,11 +6,8 @@ const clipboardy = require('clipboardy');
 
 const counters = {};
 
-function generateName(type) {
-    counters[type] = counters[type]
-        ? counters[type] + 1
-        : 1;
-    return `${type}-${counters[type]}`;
+function generateName(type, i) {
+    return `${type}-${i}`;
 }
 
 const chain = (state, next) => {
@@ -28,8 +25,16 @@ const States = {
         Resource
     }),
     pass: (Parameters) => ({
-        Type: 'pass',
+        Type: 'Pass',
         Parameters: JSON.parse(Parameters)
+    }),
+    succeed: () => ({
+        Type: 'Succeed'
+    }),
+    fail: (Error, Cause) => ({
+        Type: 'Fail',
+        Error,
+        Cause
     })
 };
 
@@ -40,34 +45,44 @@ function StateMachine(StartsAt, States) {
     };
 }
 
-function getArgs(arg, type, args) {
-    return arg.startsWith('@') && args.length <= 1
-        ? [ generateName(type), ...args ]
-        : args;
+function getArgs(arg, type, args, i) {
+    console.log(args);
+    return arg.startsWith('@') && args.length === 0
+        ? [ generateName(type, i), ...args ]
+        : [ arg, arg, args ];
 }
 
-function parseState(arg) {
+function parseState(arg, i) {
     const {
         groups: {
             type = 'task',
-            argString = arg
+            argString
         } = {}
-    } = arg.match(/^@(?<type>[^\/]+)\/(?<argString>.*)/) || {};
-    const [ name, ...args ] = getArgs(arg, type, argString.split('::'));
+    } = arg.match(/^@(?<type>[^\/]+)\/?(?<argString>.+)?/) || {};
+    const [ name, ...args ] = getArgs(arg, type, argString ? argString.split('::') : [], i);
     return { name, type, args };
 }
 
+function filterNilKeys(obj) {
+    return Object.entries(obj).reduce((acc, [ key, value ]) => {
+        if (value != null) {
+            acc[key] = value;
+        }
+        return acc;
+    }, {});
+}
+
 function State(type, ...args) {
-    return States[type](...args);
+    return filterNilKeys(States[type](...args));
 }
 
 function parse(input) {
     const [ StartsAt ] = input;
     const States = input.reduce((states, arg, i, col) => {
-        const { name, type, args } = parseState(arg);
+        const { name, type, args } = parseState(arg, i);
         const next = col[i + 1];
         const { name:nextName } = next
-            ? parseState(next)
+            ? parseState(next, i + 1)
             : false;
         const unchainedState = State(type, ...args);
         const state = chain(unchainedState, nextName);

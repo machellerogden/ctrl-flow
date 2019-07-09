@@ -2,7 +2,9 @@
   "name": "state-of-the-arg",
   "version": "0.0.1",
   "description": "argv->state-machine",
-  "bin": "index.js",
+  "bin": {
+    "sota": "index.js"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
