@@ -13,7 +13,6 @@ function generateName(type) {
     return `${type}-${counters[type]}`;
 }
 
-
 const chain = (state, next) => {
     if (next) {
         state.Next = next;
