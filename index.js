@@ -10,7 +10,10 @@ function generateName(type, i) {
     return `${type}-${i}`;
 }
 
+const terminalTypes = new Set(['Succeed', 'Fail', 'Choice']);
+
 const chain = (state, next) => {
+    if (terminalTypes.has(state.Type)) return state;
     if (next) {
         state.Next = next;
     } else {
@@ -35,6 +38,18 @@ const States = {
         Type: 'Fail',
         Error,
         Cause
+    }),
+    choice: (Choices) => ({
+        Type: 'Choice',
+        Choices: JSON.parse(Choices)
+    }),
+    parallel: (Branches) => ({
+        Type: 'Parallel',
+        Branches: JSON.parse(Branches)
+    }),
+    wait: (Seconds) => ({
+        Type: 'Wait',
+        Seconds: parseInt(Seconds, 10)
     })
 };
 
