@@ -3,11 +3,17 @@
 
 const isCI = require('is-ci')
 const clipboardy = require('clipboardy');
+const nil = void 0;
 
 const counters = {};
 
 function generateName(type, i) {
-    return `${type}-${i}`;
+    const key = `${type}-${i}`;
+    const lastKey = `${type}-${i - 1}`;
+    const count = counters[key]
+        ? counters[key]
+        : (counters[key] = (counters[lastKey] || 0) + 1);
+    return `${type}-${count}`;
 }
 
 const terminalTypes = new Set(['Succeed', 'Fail', 'Choice']);
@@ -29,7 +35,7 @@ const States = {
     }),
     pass: (Parameters) => ({
         Type: 'Pass',
-        Parameters: JSON.parse(Parameters)
+        Parameters: Parameters ? JSON.parse(Parameters) : nil
     }),
     succeed: () => ({
         Type: 'Succeed'
@@ -61,7 +67,6 @@ function StateMachine(StartsAt, States) {
 }
 
 function getArgs(arg, type, args, i) {
-    console.log(args);
     return arg.startsWith('@') && args.length === 0
         ? [ generateName(type, i), ...args ]
         : [ arg, arg, args ];
