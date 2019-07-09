@@ -67,9 +67,11 @@ function StateMachine(StartsAt, States) {
 }
 
 function getArgs(arg, type, args, i) {
-    return arg.startsWith('@') && args.length === 0
+    const expr = arg.startsWith('@');
+    if (!expr) return [ arg, arg, ...args ];
+    return args.length === 0
         ? [ generateName(type, i), ...args ]
-        : [ arg, arg, args ];
+        : [ ...args ];
 }
 
 function parseState(arg, i) {
@@ -85,7 +87,7 @@ function parseState(arg, i) {
 
 function filterNilKeys(obj) {
     return Object.entries(obj).reduce((acc, [ key, value ]) => {
-        if (value != null) {
+        if (value != nil) {
             acc[key] = value;
         }
         return acc;
