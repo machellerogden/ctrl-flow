@@ -1,12 +1,17 @@
 {
-  "name": "stateline",
+  "name": "ctrl-flow",
   "version": "0.0.0",
-  "description": "",
+  "description": "argv state-machines",
+  "bin": "index.js",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "Mac Heller-Ogden",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "clipboardy": "^2.1.0",
+    "is-ci": "^2.0.0"
+  }
 }
