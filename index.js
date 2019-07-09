@@ -56,10 +56,10 @@ function parseState(arg, i) {
     const {
         groups: {
             type = 'task',
-            argString
+            raw
         } = {}
-    } = arg.match(/^@(?<type>[^\/]+)\/?(?<argString>.+)?/) || {};
-    const [ name, ...args ] = getArgs(arg, type, argString ? argString.split('::') : [], i);
+    } = arg.match(/^@(?<type>[^\/]+)\/?(?<raw>.+)?/) || {};
+    const [ name, ...args ] = getArgs(arg, type, raw ? raw.split('::') : [], i);
     return { name, type, args };
 }
 
