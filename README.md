@@ -1,4 +1,4 @@
-# ![State of the Arg](assets/sota-logo.png?raw=true&sanitize=true)
+# ![State of the Arg](assets/sota-logo.png?raw=true)
 
 > argv->state-machine
 
