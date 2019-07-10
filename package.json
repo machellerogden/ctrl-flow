@@ -1,5 +1,5 @@
 {
-  "name": "state-of-the-arg",
+  "name": "sota",
   "version": "0.0.1",
   "description": "argv->state-machine",
   "bin": {
