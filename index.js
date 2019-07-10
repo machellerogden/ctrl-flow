@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 'use strict';
 
-const isCI = require('is-ci')
-const clipboardy = require('clipboardy');
 const nil = void 0;
 
 const counters = {};
@@ -16,9 +14,13 @@ function generateName(type, i) {
     return `${type}-${count}`;
 }
 
-const terminalTypes = new Set(['Succeed', 'Fail', 'Choice']);
+const terminalTypes = new Set([
+    'Succeed',
+    'Fail',
+    'Choice'
+]);
 
-const chain = (state, next) => {
+function chain(state, next) {
     if (terminalTypes.has(state.Type)) return state;
     if (next) {
         state.Next = next;
@@ -26,7 +28,7 @@ const chain = (state, next) => {
         state.End = true;
     }
     return state;
-};
+}
 
 const States = {
     task: (Resource) => ({
@@ -87,9 +89,7 @@ function parseState(arg, i) {
 
 function filterNilKeys(obj) {
     return Object.entries(obj).reduce((acc, [ key, value ]) => {
-        if (value != nil) {
-            acc[key] = value;
-        }
+        if (value != nil) acc[key] = value;
         return acc;
     }, {});
 }
@@ -98,25 +98,29 @@ function State(type, ...args) {
     return filterNilKeys(States[type](...args));
 }
 
+function stateReducer(states, arg, i, col) {
+    const { name, type, args } = parseState(arg, i);
+    const next = col[i + 1];
+    const { name:nextName } = next
+        ? parseState(next, i + 1)
+        : false;
+    const unchainedState = State(type, ...args);
+    const state = chain(unchainedState, nextName);
+    return {
+        ...states,
+        [name]: state
+    };
+}
+
 function parse(input) {
     const [ StartsAt ] = input;
-    const States = input.reduce((states, arg, i, col) => {
-        const { name, type, args } = parseState(arg, i);
-        const next = col[i + 1];
-        const { name:nextName } = next
-            ? parseState(next, i + 1)
-            : false;
-        const unchainedState = State(type, ...args);
-        const state = chain(unchainedState, nextName);
-        return {
-            ...states,
-            [name]: state
-        };
-    }, {});
+    const States = input.reduce(stateReducer, {});
     return StateMachine(StartsAt, States);
 }
 
 if (require.main === module) {
+    const isCI = require('is-ci')
+    const clipboardy = require('clipboardy');
     (async () => {
         try {
             const args = process.argv.slice(2).filter(v => /^[^\-]/.test(v));
