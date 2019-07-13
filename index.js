@@ -3,32 +3,11 @@
 
 const nil = void 0;
 
-const counters = {};
-
-function generateName(type, i) {
-    const key = `${type}-${i}`;
-    const lastKey = `${type}-${i - 1}`;
-    const count = counters[key]
-        ? counters[key]
-        : (counters[key] = (counters[lastKey] || 0) + 1);
-    return `${type}-${count}`;
-}
-
 const terminalTypes = new Set([
     'Succeed',
     'Fail',
     'Choice'
 ]);
-
-function chain(state, next) {
-    if (terminalTypes.has(state.Type)) return state;
-    if (next) {
-        state.Next = next;
-    } else {
-        state.End = true;
-    }
-    return state;
-}
 
 const States = {
     task: (Resource) => ({
@@ -61,61 +40,86 @@ const States = {
     })
 };
 
-function StateMachine(StartsAt, States) {
-    return {
-        StartsAt,
-        States
-    };
-}
+function Parser() {
+    const counters = {};
 
-function getArgs(arg, type, args, i) {
-    const expr = arg.startsWith('@');
-    if (!expr) return [ arg, arg, ...args ];
-    return args.length === 0
-        ? [ generateName(type, i), ...args ]
-        : [ ...args ];
-}
+    function generateName(type, i) {
+        const key = `${type}-${i}`;
+        const lastKey = `${type}-${i - 1}`;
+        const count = counters[key]
+            ? counters[key]
+            : (counters[key] = (counters[lastKey] || 0) + 1);
+        return `${type}-${count}`;
+    }
 
-function parseState(arg, i) {
-    const {
-        groups: {
-            type = 'task',
-            raw
-        } = {}
-    } = arg.match(/^@(?<type>[^\/]+)\/?(?<raw>.+)?/) || {};
-    const [ name, ...args ] = getArgs(arg, type, raw ? raw.split('::') : [], i);
-    return { name, type, args };
-}
+    function chain(state, next) {
+        if (terminalTypes.has(state.Type)) return state;
+        if (next) {
+            state.Next = next;
+        } else {
+            state.End = true;
+        }
+        return state;
+    }
 
-function filterNilKeys(obj) {
-    return Object.entries(obj).reduce((acc, [ key, value ]) => {
-        if (value != nil) acc[key] = value;
-        return acc;
-    }, {});
-}
+    function StateMachine(StartsAt, States) {
+        return {
+            StartsAt,
+            States
+        };
+    }
 
-function State(type, ...args) {
-    return filterNilKeys(States[type](...args));
-}
+    function getArgs(arg, type, args, i) {
+        const expr = arg.startsWith('@');
+        if (!expr) return [ arg, arg, ...args ];
+        return args.length === 0
+            ? [ generateName(type, i), ...args ]
+            : [ ...args ];
+    }
 
-function stateReducer(states, arg, i, col) {
-    const { name, type, args } = parseState(arg, i);
-    const next = col[i + 1];
-    const { name:nextName } = next
-        ? parseState(next, i + 1)
-        : false;
-    const unchainedState = State(type, ...args);
-    const state = chain(unchainedState, nextName);
-    return {
-        ...states,
-        [name]: state
-    };
-}
+    function parseState(arg, i) {
+        const {
+            groups: {
+                type = 'task',
+                raw
+            } = {}
+        } = arg.match(/^@(?<type>[^\/]+)\/?(?<raw>.+)?/) || {};
+        const [ name, ...args ] = getArgs(arg, type, raw ? raw.split('::') : [], i);
+        return { name, type, args };
+    }
 
-function parse(input) {
-    const [ StartsAt ] = input;
-    const States = input.reduce(stateReducer, {});
-    return StateMachine(StartsAt, States);
+    function filterNilKeys(obj) {
+        return Object.entries(obj).reduce((acc, [ key, value ]) => {
+            if (value != nil) acc[key] = value;
+            return acc;
+        }, {});
+    }
+
+    function State(type, ...args) {
+        return filterNilKeys(States[type](...args));
+    }
+
+    function stateReducer(states, arg, i, col) {
+        const { name, type, args } = parseState(arg, i);
+        const next = col[i + 1];
+        const { name:nextName } = next
+            ? parseState(next, i + 1)
+            : false;
+        const unchainedState = State(type, ...args);
+        const state = chain(unchainedState, nextName);
+        return {
+            ...states,
+            [name]: state
+        };
+    }
+
+    function parse(input) {
+        const [ StartsAt ] = input;
+        const States = input.reduce(stateReducer, {});
+        return StateMachine(StartsAt, States);
+    }
+
+    return parse;
 }
 
 if (require.main === module) {
@@ -124,7 +128,7 @@ if (require.main === module) {
     (async () => {
         try {
             const args = process.argv.slice(2).filter(v => /^[^\-]/.test(v));
-            const stateMachine = JSON.stringify(parse(args), null, 4);
+            const stateMachine = JSON.stringify(Parser()(args), null, 4);
             if (!isCI) await clipboardy.write(stateMachine);
             process.stdout.write(stateMachine);
         } catch (e) {
