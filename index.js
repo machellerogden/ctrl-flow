@@ -62,9 +62,9 @@ function Parser() {
         return state;
     }
 
-    function StateMachine(StartsAt, States) {
+    function StateMachine(StartAt, States) {
         return {
-            StartsAt,
+            StartAt,
             States
         };
     }
@@ -114,13 +114,17 @@ function Parser() {
     }
 
     function parse(input) {
-        const [ StartsAt ] = input;
+        const [ StartAt ] = input;
         const States = input.reduce(stateReducer, {});
-        return StateMachine(StartsAt, States);
+        return StateMachine(StartAt, States);
     }
 
     return parse;
 }
+
+module.exports = {
+    Parser
+};
 
 if (require.main === module) {
     const isCI = require('is-ci')

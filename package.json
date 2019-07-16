@@ -7,7 +7,8 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ava test/*.spec.js",
+    "watch": "npm run test -- --watch"
   },
   "keywords": [],
   "author": "Mac Heller-Ogden",
@@ -15,5 +16,9 @@
   "dependencies": {
     "clipboardy": "^2.1.0",
     "is-ci": "^2.0.0"
+  },
+  "devDependencies": {
+    "ava": "^2.2.0",
+    "sinon": "^7.3.2"
   }
 }
