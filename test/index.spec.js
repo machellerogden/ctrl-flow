@@ -34,3 +34,46 @@ test('works', async t => {
         'c'
     ]), definition);
 });
+
+test('parallel', async t => {
+    const definition = {
+        StartAt: 'a',
+        States: {
+            'parallel-1': {
+                Type: 'Parallel',
+                Branches: [
+                    {
+                        StartAt: 'a',
+                        a: {
+                            Type: 'Task',
+                            Resource: 'a',
+                            Next: 'b'
+                        },
+                        b: {
+                            Type: 'Task',
+                            Resource: 'b',
+                            Next: 'c'
+                        }
+                    },
+                    {
+                        StartAt: 'c',
+                        c: {
+                            Type: 'Task',
+                            Resource: 'c',
+                            Next: 'd'
+                        },
+                        d: {
+                            Type: 'Task',
+                            Resource: 'd',
+                            End: true
+                        }
+                    }
+                ]
+            }
+        }
+    };
+    t.deepEqual(Parser()([
+        'a,b',
+        'c,d'
+    ]), definition);
+});
