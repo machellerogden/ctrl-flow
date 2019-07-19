@@ -39,7 +39,7 @@ function Parser() {
         if (Array.isArray(arg) && Array.isArray(arg[0])) {
             return {
                 name: NameFactory('parallel')(isNext),
-                state: State('parallel', ...arg.map(branch => branch.map(a => parseState({ arg: a }))))
+                state: State('parallel', arg.map(branch => branch.map(a => parseState({ arg: a }))))
             };
         }
         // TODO: not this, joi
