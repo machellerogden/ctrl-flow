@@ -35,7 +35,7 @@ test('works', async t => {
     ]), definition);
 });
 
-test('parallel', async t => {
+test.skip('parallel', async t => {
     const definition = {
         StartAt: 'a',
         States: {
@@ -47,24 +47,14 @@ test('parallel', async t => {
                         a: {
                             Type: 'Task',
                             Resource: 'a',
-                            Next: 'b'
-                        },
-                        b: {
-                            Type: 'Task',
-                            Resource: 'b',
-                            Next: 'c'
+                            End: true
                         }
                     },
                     {
-                        StartAt: 'c',
-                        c: {
+                        StartAt: 'b',
+                        b: {
                             Type: 'Task',
-                            Resource: 'c',
-                            Next: 'd'
-                        },
-                        d: {
-                            Type: 'Task',
-                            Resource: 'd',
+                            Resource: 'b',
                             End: true
                         }
                     }
@@ -73,7 +63,6 @@ test('parallel', async t => {
         }
     };
     t.deepEqual(Parser()([
-        'a,b',
-        'c,d'
+        'a,b'
     ]), definition);
 });

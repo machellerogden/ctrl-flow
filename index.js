@@ -1,109 +1,56 @@
 #!/usr/bin/env node
 'use strict';
 
-const nil = void 0;
+const nodes = require('./lib/nodes');
 
-const terminalTypes = new Set([
-    'Succeed',
-    'Fail',
-    'Choice'
-]);
+const {
+    nil,
+    terminals,
+    filterNilKeys,
+    chain
+} = require('./lib/util');
 
-const States = {
-    task: (Resource) => ({
-        Type: 'Task',
-        Resource
-    }),
-    pass: (Parameters) => ({
-        Type: 'Pass',
-        Parameters: Parameters ? JSON.parse(Parameters) : nil
-    }),
-    succeed: () => ({
-        Type: 'Succeed'
-    }),
-    fail: (Error, Cause) => ({
-        Type: 'Fail',
-        Error,
-        Cause
-    }),
-    choice: (Choices) => ({
-        Type: 'Choice',
-        Choices: JSON.parse(Choices)
-    }),
-    parallel: (Branches) => ({
-        Type: 'Parallel',
-        Branches: JSON.parse(Branches)
-    }),
-    wait: (Seconds) => ({
-        Type: 'Wait',
-        Seconds: parseInt(Seconds, 10)
-    })
-};
+const { CreateNameFactory } = require('./lib/names');
+
+function State(type, ...args) {
+    return filterNilKeys(nodes[type](...args));
+}
+
+function getArgs(arg, type, args) {
+    const expr = arg.startsWith('@');
+    return (!expr)
+        ? [ arg, arg, ...args ]
+        : [ ...args ];
+}
 
 function Parser() {
-    const counters = {};
+    const NameFactory = CreateNameFactory();
 
-    function generateName(type, i) {
-        const key = `${type}-${i}`;
-        const lastKey = `${type}-${i - 1}`;
-        const count = counters[key]
-            ? counters[key]
-            : (counters[key] = (counters[lastKey] || 0) + 1);
-        return `${type}-${count}`;
-    }
-
-    function chain(state, next) {
-        if (terminalTypes.has(state.Type)) return state;
-        if (next) {
-            state.Next = next;
-        } else {
-            state.End = true;
-        }
-        return state;
-    }
-
-    function StateMachine(StartAt, States) {
-        return {
-            StartAt,
-            States
-        };
-    }
-
-    function getArgs(arg, type, args, i) {
-        const expr = arg.startsWith('@');
-        if (!expr) return [ arg, arg, ...args ];
-        return args.length === 0
-            ? [ generateName(type, i), ...args ]
-            : [ ...args ];
-    }
-
-    function parseState(arg, i) {
+    function parseState(arg, isNext = false) {
         const {
             groups: {
                 type = 'task',
                 raw
             } = {}
         } = arg.match(/^@(?<type>[^\/]+)\/?(?<raw>.+)?/) || {};
-        const [ name, ...args ] = getArgs(arg, type, raw ? raw.split('::') : [], i);
+
+        const generateName = NameFactory(type);
+
+        const [
+            name = generateName(isNext),
+            ...args
+        ] = getArgs(arg, type, raw
+            ? raw.split('::')
+            : []);
+
         return { name, type, args };
     }
 
-    function filterNilKeys(obj) {
-        return Object.entries(obj).reduce((acc, [ key, value ]) => {
-            if (value != nil) acc[key] = value;
-            return acc;
-        }, {});
-    }
-
-    function State(type, ...args) {
-        return filterNilKeys(States[type](...args));
-    }
-
     function stateReducer(states, arg, i, col) {
-        const { name, type, args } = parseState(arg, i);
+        const { name, type, args } = parseState(arg);
         const next = col[i + 1];
         const { name:nextName } = next
-            ? parseState(next, i + 1)
+            ? parseState(next, true)
             : false;
         const unchainedState = State(type, ...args);
         const state = chain(unchainedState, nextName);
@@ -116,7 +63,7 @@ function Parser() {
     function parse(input) {
         const [ StartAt ] = input;
         const States = input.reduce(stateReducer, {});
-        return StateMachine(StartAt, States);
+        return nodes.branch(StartAt, States);
     }
 
     return parse;
