@@ -23,10 +23,27 @@ function getArgs(arg, type, args) {
         : [ ...args ];
 }
 
+function preprocess(input) {
+    return input.reduce((acc, arg) => {
+        const result =  arg.includes(',')
+            ? arg.split(',').map(v => v.split('+'))
+            : arg;
+        return [ ...acc, result ];
+    }, []);
+}
+
 function Parser() {
     const NameFactory = CreateNameFactory();
 
     function parseState({ arg, isNext = false }) {
+        if (Array.isArray(arg) && Array.isArray(arg[0])) {
+            return {
+                name: NameFactory('parallel')(isNext),
+                state: State('parallel', ...arg.map(branch => branch.map(a => parseState({ arg: a }))))
+            };
+        }
+        // TODO: not this, joi
+        if (typeof arg !== 'string') throw new Error('invalid');
         const {
             groups: {
                 type = 'task',
@@ -43,16 +60,16 @@ function Parser() {
             ? raw.split('::')
             : []);
 
-        return { name, type, args };
+        return { name, state: State(type, ...args) };
     }
 
     function stateReducer(states, arg, i, col) {
-        const { name, type, args } = parseState({ arg });
+        const { name, state:unchainedState } = parseState({ arg });
         const next = col[i + 1];
         const { name:nextName } = next
+            // TODO: separate parseName fn
             ? parseState({ arg: next, isNext: true })
             : false;
-        const unchainedState = State(type, ...args);
         const state = chain(unchainedState, nextName);
         return {
             ...states,
@@ -60,21 +77,10 @@ function Parser() {
         };
     }
 
-    function preprocess(input) {
-        return input.reduce((acc, arg) => {
-            // starting to stub out preprocessor...
-            // TODO:
-            //   * split arg on comma
-            //   * add trampoline for handling parallel branch recursion
-            const result = arg;
-            return [ ...acc, result ];
-        }, []);
-    }
-
     function parse(input) {
         const preprocessed = preprocess(input);
         const [ StartAt ] = preprocessed;
-        const States = input.reduce(stateReducer, {});
+        const States = preprocessed.reduce(stateReducer, {});
         return nodes.branch(StartAt, States);
     }
 
