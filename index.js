@@ -26,7 +26,7 @@ function getArgs(arg, type, args) {
 function Parser() {
     const NameFactory = CreateNameFactory();
 
-    function parseState(arg, isNext = false) {
+    function parseState({ arg, isNext = false }) {
         const {
             groups: {
                 type = 'task',
@@ -47,10 +47,10 @@ function Parser() {
     }
 
     function stateReducer(states, arg, i, col) {
-        const { name, type, args } = parseState(arg);
+        const { name, type, args } = parseState({ arg });
         const next = col[i + 1];
         const { name:nextName } = next
-            ? parseState(next, true)
+            ? parseState({ arg: next, isNext: true })
             : false;
         const unchainedState = State(type, ...args);
         const state = chain(unchainedState, nextName);
