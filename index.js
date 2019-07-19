@@ -23,23 +23,60 @@ function getArgs(arg, type, args) {
         : [ ...args ];
 }
 
+// quick and dirty reader which expands balance groups. good enough to get started.
 function preprocess(input) {
     return input.reduce((acc, arg) => {
-        const result =  arg.includes(',')
-            ? arg.split(',').map(v => v.split('+'))
-            : arg;
-        return [ ...acc, result ];
+        if (/\[.*\]/.test(arg)) {
+            let expanded = [];
+            const stack = [ expanded ];
+            let current = () => stack[stack.length - 1  || 0];
+            let i = 0;
+            let token = '';
+            while (i < arg.length) {
+                if (arg[i] === '[') {
+                    const next = [];
+                    current().push(next);
+                    stack.push(next);
+                } else if (arg[i] === ']') {
+                    stack.pop();
+                } else if (arg[i] !== ' ') {
+                    const curr = current();
+                    token += arg[i];
+                } else {
+                    current().push(token);
+                    token = '';
+                }
+                i++;
+            }
+            return [ ...acc, expanded ];
+        } else {
+            return [ ...acc, arg ];
+        }
     }, []);
 }
 
 function Parser() {
     const NameFactory = CreateNameFactory();
 
+    function stateReducer(states, arg, i, col) {
+        const { name, state:unchainedState } = parseState({ arg });
+        const next = col[i + 1];
+        const { name:nextName } = next
+            // TODO: separate parseName fn
+            ? parseState({ arg: next, isNext: true })
+            : false;
+        const state = chain(unchainedState, nextName);
+        return {
+            ...states,
+            [name]: state
+        };
+    }
+
     function parseState({ arg, isNext = false }) {
         if (Array.isArray(arg) && Array.isArray(arg[0])) {
             return {
                 name: NameFactory('parallel')(isNext),
-                state: State('parallel', arg.map(branch => branch.map(a => parseState({ arg: a }))))
+                state: State('parallel', arg.map(branch => nodes.branch(branch[0], branch.reduce(stateReducer, {}))))
             };
         }
         // TODO: not this, joi
@@ -61,20 +98,6 @@ function Parser() {
             : []);
 
         return { name, state: State(type, ...args) };
-    }
-
-    function stateReducer(states, arg, i, col) {
-        const { name, state:unchainedState } = parseState({ arg });
-        const next = col[i + 1];
-        const { name:nextName } = next
-            // TODO: separate parseName fn
-            ? parseState({ arg: next, isNext: true })
-            : false;
-        const state = chain(unchainedState, nextName);
-        return {
-            ...states,
-            [name]: state
-        };
     }
 
     function parse(input) {
