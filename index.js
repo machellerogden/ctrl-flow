@@ -60,8 +60,20 @@ function Parser() {
         };
     }
 
+    function preprocess(input) {
+        return input.reduce((acc, arg) => {
+            // starting to stub out preprocessor...
+            // TODO:
+            //   * split arg on comma
+            //   * add trampoline for handling parallel branch recursion
+            const result = arg;
+            return [ ...acc, result ];
+        }, []);
+    }
+
     function parse(input) {
-        const [ StartAt ] = input;
+        const preprocessed = preprocess(input);
+        const [ StartAt ] = preprocessed;
         const States = input.reduce(stateReducer, {});
         return nodes.branch(StartAt, States);
     }
