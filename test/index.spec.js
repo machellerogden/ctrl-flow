@@ -2,7 +2,7 @@
 
 import test from 'ava';
 import sinon from 'sinon';
-import { Sota } from '..';
+import { compile } from '..';
 
 test.beforeEach(t => t.context = { sandbox: sinon.createSandbox() });
 test.afterEach(t => t.context.sandbox.restore());
@@ -28,41 +28,41 @@ test('works', async t => {
             }
         }
     };
-    t.deepEqual(Sota().compile([
+    t.deepEqual(compile([
         'a',
         'b',
         'c'
     ]), definition);
 });
 
-test.skip('parallel', async t => {
+test('parallel', async t => {
     const definition = {
-        StartAt: 'a',
+        StartAt: 'parallel-1',
         States: {
             'parallel-1': {
                 Type: 'Parallel',
                 Branches: [
                     {
                         StartAt: 'a',
-                        a: {
-                            Type: 'Task',
-                            Resource: 'a',
-                            End: true
-                        }
-                    },
-                    {
-                        StartAt: 'b',
-                        b: {
-                            Type: 'Task',
-                            Resource: 'b',
-                            End: true
+                        States: {
+                            a: {
+                                Type: 'Task',
+                                Resource: 'a',
+                                Next: 'b'
+                            },
+                            b: {
+                                Type: 'Task',
+                                Resource: 'b',
+                                End: true
+                            }
                         }
                     }
-                ]
+                ],
+                End: true
             }
         }
     };
-    t.deepEqual(Sota().compile([
-        'a,b'
+    t.deepEqual(compile([
+        '[a b]'
     ]), definition);
 });
