@@ -4,7 +4,7 @@
 const nodes = require('./lib/nodes');
 const { Tokenizer } = require('./lib/tokens');
 const { nil, terminals, filterNilKeys, chain } = require('./lib/util');
-const { CreateNameFactory } = require('./lib/names');
+const { createNameFactory } = require('./lib/names');
 
 function State(type, ...args) {
     return filterNilKeys(nodes[type](...args));
@@ -12,13 +12,14 @@ function State(type, ...args) {
 
 
 function Sota() {
-    const { tokenize } = Tokenizer();
+    const NameFactory = createNameFactory();
+    const { tokenize } = Tokenizer(NameFactory);
 
     function stateReducer(states, arg, i, col) {
         if (Array.isArray(arg)) {
             return {
                 ...states,
-                ...parse(arg)
+                [NameFactory('parallel').next()]: parse(arg)
             };
         }
         const { name, type, args } = arg;
