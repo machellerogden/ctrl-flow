@@ -2,7 +2,7 @@
 
 import test from 'ava';
 import sinon from 'sinon';
-import { Parser } from '..';
+import { Sota } from '..';
 
 test.beforeEach(t => t.context = { sandbox: sinon.createSandbox() });
 test.afterEach(t => t.context.sandbox.restore());
@@ -28,7 +28,7 @@ test('works', async t => {
             }
         }
     };
-    t.deepEqual(Parser()([
+    t.deepEqual(Sota().compile([
         'a',
         'b',
         'c'
@@ -62,7 +62,7 @@ test.skip('parallel', async t => {
             }
         }
     };
-    t.deepEqual(Parser()([
+    t.deepEqual(Sota().compile([
         'a,b'
     ]), definition);
 });
