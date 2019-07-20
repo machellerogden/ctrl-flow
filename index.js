@@ -10,7 +10,6 @@ function State(type, ...args) {
     return filterNilKeys(nodes[type](...args));
 }
 
-
 function Sota() {
     const NameFactory = createNameFactory();
     const { tokenize } = Tokenizer(NameFactory);
@@ -24,8 +23,8 @@ function Sota() {
         }
         const { name, type, args } = arg;
         const unchainedState = State(type, ...args);
-        const next = col[i + 1];
-        const { name:nextName = false } = next || {};
+        const next = col[i + 1] || {};
+        const { name:nextName = false } = next;
         const state = chain(unchainedState, nextName);
         return {
             ...states,
