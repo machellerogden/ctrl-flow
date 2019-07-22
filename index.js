@@ -12,10 +12,14 @@ function branch(StartAt, States) {
     };
 }
 
-function task(Resource) {
+function task(Resource, ResultPath) {
+    ResultPath = ResultPath == null
+        ? `$.${Resource}`
+        : `$.${ResultPath}`;
     return {
         Type: 'Task',
-        Resource
+        Resource,
+        ResultPath
     };
 }
 
