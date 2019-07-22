@@ -73,7 +73,7 @@ const nodes = {
 };
 
 function State(type, ...args) {
-    return filterNilKeys(nodes[type](...args));
+    return filterNilKeys(nodes[type.toLowerCase()](...args));
 }
 
 function stateReducer(states, { name, type, args }, i, col) {
@@ -104,11 +104,16 @@ module.exports = {
 };
 
 if (require.main === module) {
+    const data = !process.stdin.isTTY
+        ? require('fs').readFileSync(0, 'utf8')
+        : null;
     const isCI = require('is-ci')
     const clipboardy = require('clipboardy');
     (async () => {
         try {
-            const args = process.argv.slice(2).filter(v => /^[^\-]/.test(v));
+            const args = data != null
+                ? data
+                : process.argv.slice(2).filter(v => /^[^\-]/.test(v));
             const stateMachine = JSON.stringify(compile(args), null, 4);
             if (!isCI) await clipboardy.write(stateMachine);
             process.stdout.write(stateMachine);
