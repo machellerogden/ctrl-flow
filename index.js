@@ -50,7 +50,7 @@ function choice(Choices) {
 function parallel(...Branches) {
     return {
         Type: 'Parallel',
-        Branches: [ parse(Branches) ]
+        Branches: [ Branches.map(parse) ]
     };
 }
 
