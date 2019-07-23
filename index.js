@@ -108,6 +108,7 @@ module.exports = {
 };
 
 if (require.main === module) {
+    if (process.argv[2] == null) return require('./lib/repl').start();
     const data = !process.stdin.isTTY
         ? require('fs').readFileSync(0, 'utf8')
         : null;
