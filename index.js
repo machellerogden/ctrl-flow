@@ -93,15 +93,23 @@ function State(type, ...args) {
 function stateReducer(states, { name, type, args }, i, col) {
     if (i === 0 && type === 'amend') throw new SyntaxError('amend cannot be the first state');
     if (type === 'amend') {
-        const lastToken = col[i - 1];
-        const  { name:lastName } = lastToken;
+        let lastToken;
+        let j = i;
+        do {
+            lastToken = col[--j];
+        } while (lastToken.type === 'amend')
+        const { name:lastName } = lastToken;
         return {
             ...states,
             [lastName]: Object.assign(states[lastName], State(type, ...args))
         };
     };
     const unchainedState = State(type, ...args);
-    const next = col[i + 1] || {};
+    let next;
+    let j = i;
+    do {
+        next = col[++j] || {};
+    } while (next.type === 'amend')
     const { name:nextName = false } = next;
     const state = chain(unchainedState, nextName);
     return {
