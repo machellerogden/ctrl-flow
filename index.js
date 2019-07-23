@@ -4,6 +4,15 @@
 const { Tokenizer } = require('./lib/tokens');
 const { nil, terminals, filterNilKeys, chain } = require('./lib/util');
 const { createNameFactory } = require('./lib/names');
+const { SyntaxError } = require('./lib/errors');
+
+function amend(...args) {
+    const obj = args.reduce((acc, v, i, col) => {
+        acc[i % 2 ? col[i - 1] : v] = v;
+        return acc;
+    }, {});
+    return obj;
+}
 
 function branch(StartAt, States) {
     return {
@@ -73,7 +82,8 @@ const nodes = {
     fail,
     choice,
     parallel,
-    wait
+    wait,
+    amend
 };
 
 function State(type, ...args) {
@@ -81,6 +91,15 @@ function State(type, ...args) {
 }
 
 function stateReducer(states, { name, type, args }, i, col) {
+    if (i === 0 && type === 'amend') throw new SyntaxError('amend cannot be the first state');
+    if (type === 'amend') {
+        const lastToken = col[i - 1];
+        const  { name:lastName } = lastToken;
+        return {
+            ...states,
+            [lastName]: Object.assign(states[lastName], State(type, ...args))
+        };
+    };
     const unchainedState = State(type, ...args);
     const next = col[i + 1] || {};
     const { name:nextName = false } = next;
