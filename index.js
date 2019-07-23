@@ -6,7 +6,7 @@ const { nil, terminals, filterNilKeys, chain } = require('./lib/util');
 const { createNameFactory } = require('./lib/names');
 const { SyntaxError } = require('./lib/errors');
 
-function amend(...args) {
+function _with(...args) {
     const obj = args.reduce((acc, v, i, col) => {
         acc[i % 2 ? col[i - 1] : v] = v;
         return acc;
@@ -83,7 +83,7 @@ const nodes = {
     choice,
     parallel,
     wait,
-    amend
+    with: _with
 };
 
 function State(type, ...args) {
@@ -91,13 +91,13 @@ function State(type, ...args) {
 }
 
 function stateReducer(states, { name, type, args }, i, col) {
-    if (i === 0 && type === 'amend') throw new SyntaxError('amend cannot be the first state');
-    if (type === 'amend') {
+    if (i === 0 && type === 'with') throw new SyntaxError('`with` cannot be the first state');
+    if (type === 'with') {
         let lastToken;
         let j = i;
         do {
             lastToken = col[--j];
-        } while (lastToken.type === 'amend')
+        } while (lastToken.type === 'with')
         const { name:lastName } = lastToken;
         return {
             ...states,
@@ -109,7 +109,7 @@ function stateReducer(states, { name, type, args }, i, col) {
     let j = i;
     do {
         next = col[++j] || {};
-    } while (next.type === 'amend')
+    } while (next.type === 'with')
     const { name:nextName = false } = next;
     const state = chain(unchainedState, nextName);
     return {
@@ -135,7 +135,7 @@ module.exports = {
 };
 
 if (require.main === module) {
-    if (process.argv[2] == null) return require('./lib/repl').start();
+    if (process.stdin.isTTY && process.argv[2] == null) return require('./lib/repl').start();
     const data = !process.stdin.isTTY
         ? require('fs').readFileSync(0, 'utf8')
         : null;

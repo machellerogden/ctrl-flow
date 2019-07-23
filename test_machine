@@ -1,4 +1,9 @@
 foo
-bim
+@with/ResultPath:$.foo
+@with/InputPath:$.bar
+
+@task/bim:bim-fn
+@with/ResultPath:$.bim
+@with/InputPath:$.baz
+
 baz
-[[bim,bam][boom,snap]]
