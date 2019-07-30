@@ -15,7 +15,9 @@
   "license": "MIT",
   "dependencies": {
     "clipboardy": "^2.1.0",
-    "is-ci": "^2.0.0"
+    "is-ci": "^2.0.0",
+    "pdn": "^0.2.5",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "ava": "^2.2.0",
