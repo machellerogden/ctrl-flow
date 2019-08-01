@@ -1,9 +1,11 @@
-foo
-@with/ResultPath:$.foo
-@with/InputPath:$.bar
+@state{name     foo
+       type     task
+       resource arn
+       input    $.foo
+       output   $.foo}
 
-@task/bim:bim-fn
-@with/ResultPath:$.bim
-@with/InputPath:$.baz
-
-baz
+@state{name     bar
+       type     task
+       resource arn
+       input    $.foo
+       output   $.foo}

@@ -2,23 +2,11 @@
 'use strict';
 
 const { EOL } = require('os');
-const { read, readAll } = require('pdn');
+const pdn = require('pdn');
 const { inspect } = require('util');
 const uuid = require('uuid/v4');
 const streamify = require('async-stream-generator');
-
-async function* chain(states) {
-    const branch = {
-        States: {}
-    };
-    let i = 0;
-    for await (const [ name, props ] of states) {
-        if (i === 0) branch.StartsAt = name;
-        branch.States[name] = props;
-        i++;
-    }
-    yield branch;
-}
+const { GenSym } = require('./lib/names');
 
 async function* linebreak(statements) {
     for await (const statement of statements) {
@@ -39,19 +27,35 @@ function pipe(...fns) {
 function pprint(v) {
     return inspect(v, { depth: null, colors: true });
 }
+
 const getResultProp = v =>
     typeof v === 'string' && v.startsWith('$.')
         ? 'ResultPath'
         : 'Result';
 
 const propMap = {
+    t: 'Type',
     type: 'Type',
+
     i: 'InputPath',
     in: 'InputPath',
-    out: 'OutputPath',
+    input: 'InputPath',
+    inputpath: 'InputPath',
+    'input-path': 'InputPath',
+
     o: 'OutputPath',
+    out: 'OutputPath',
+    output: 'OutputPath',
+    outputpath: 'OutputPath',
+    'output-path': 'OutputPath',
+
     r: getResultProp,
-    result: getResultProp
+    result: getResultProp,
+    resultpath: 'ResultPath',
+    'result-path': 'ResultPath',
+
+    res: 'Resource',
+    resource: 'Resource'
 }
 
 function renameKeys(obj, names) {
@@ -67,35 +71,78 @@ function renameKeys(obj, names) {
     }, { ...obj });
 }
 
+const stateDefaults = { Type: 'Pass' };
+
 function translate(props) {
     const renamed = renameKeys(props, propMap);
-    return { Type: 'Pass', ...renamed };
+    return { ...stateDefaults, ...renamed };
 }
 
-function state(data) {
-    if (typeof data !== 'object') throw new SyntaxError('Invalid state data');
-    if (!Array.isArray(data)) data = [ data ];
-    if (data.length < 1 || typeof data[0] === 'object') data = [ uuid(), ...data ];
-    const [ name, props = {} ] = data;
-    const unchained = [ name, translate(props) ]
-    return unchained;
-}
+async function* chain(states) {
 
-const opts = {
-    readers: {
-        state
+    const resolved = [];
+
+    for await (const state of states) {
+        resolved.push(state);
     }
-};
 
-const stream = pipe(chain, stringify, linebreak, streamify);
+    const chained = resolved.reduce((acc, { name, ...props }, i, col) => {
+        if (i === 0) acc.StartsAt = name;
+        acc.States[name] = props;
+        if (col.length > i + 1) {
+            acc.States[name].Next = col[i + 1].name;
+        } else {
+            acc.States[name].End = true;
+        }
+        return acc;
+    }, { States: {} });
+
+    yield chained;
+}
+
+
+function Compiler() {
+    const genSym = GenSym();
+
+    function compile(props) {
+        if (typeof props !== 'object' || Array.isArray(props)) {
+            throw new SyntaxError('Invalid state props');
+        }
+        const translated = translate(props);
+        const unchained = translated.name != null
+            ? translated
+            : { ...translated, name: genSym(translated.type) };
+        return unchained;
+    }
+
+    return { compile };
+
+}
+
+function Reader() {
+    const { compile:state } = Compiler();
+    const opts = { readers: { state } };
+
+    const read = input => pdn.read(input, opts);
+    const readAll = input => pdn.readAll(input, opts);
+    const readToStream = pipe(read, chain, stringify, linebreak, streamify);
+
+    return {
+        read,
+        readAll,
+        readToStream
+    };
+}
 
 if (require.main === module) {
+    const { readAll, readToStream } = Reader();
+
     return process.stdin.isTTY
         ? process.argv[2] == null
             ? require('repl').start({
-                eval: (cmd, context, filename, callback) => readAll(cmd, opts).then(output => callback(null, output)),
+                eval: (cmd, context, filename, callback) => readAll(cmd).then(output => callback(null, output)),
                 writer: output => output.map(pprint).join(EOL)
               })
-            : stream(read(process.argv.slice(2).join(' '), opts)).pipe(process.stdout)
-        : stream(read(process.stdin, opts)).pipe(process.stdout);
+            : readToStream(process.argv.slice(2).join(' ')).pipe(process.stdout)
+        : readToStream(process.stdin).pipe(process.stdout);
 }
