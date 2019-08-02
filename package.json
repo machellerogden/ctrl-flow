@@ -16,7 +16,7 @@
   "dependencies": {
     "clipboardy": "^2.1.0",
     "is-ci": "^2.0.0",
-    "pdn": "^0.2.7"
+    "pdn": "^0.2.8"
   },
   "devDependencies": {
     "ava": "^2.2.0",
