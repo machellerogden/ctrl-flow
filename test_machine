@@ -1,11 +1,15 @@
-@state{name     foo
-       type     task
-       resource arn
-       input    $.foo
-       output   $.foo}
-
-@state{name     bar
-       type     task
-       resource arn
-       input    $.foo
-       output   $.foo}
+@branch[
+  foo
+  bar
+  baz
+  @parallel[
+    @branch[
+      a
+      b
+    ]
+    @branch[
+      c
+      d
+    ]
+  ]
+]
