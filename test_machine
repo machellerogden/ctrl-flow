@@ -1,15 +1,5 @@
-@branch[
-  foo
-  bar
-  baz
-  @parallel[
-    @branch[
-      a
-      b
-    ]
-    @branch[
-      c
-      d
-    ]
-  ]
-]
+foo
+bar
+baz
+[[a b]
+ [c d]]
