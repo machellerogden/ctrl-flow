@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const { readToStream } = require('./lib/reader');
+const { read, readAll, readToStream } = module.exports = require('./lib/reader');
 
 if (require.main === module) {
     process.stdin.isTTY
