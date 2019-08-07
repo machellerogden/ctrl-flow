@@ -134,30 +134,14 @@ test('parallel', async t => {
             }
         }
     };
-    t.deepEqual(await readAll([
-        '[a b]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '[a [b]]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '[[a] b]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '[[a] [b]]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '@parallel[@branch a @branch b]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '@parallel[@branch[a] @branch[b]]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '@parallel[a b]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '@parallel[[a] [b]]'
-    ]), definition);
+    t.deepEqual(await readAll('[a b]'), definition);
+    t.deepEqual(await readAll('[a [b]]'), definition);
+    t.deepEqual(await readAll('[[a] b]'), definition);
+    t.deepEqual(await readAll('[[a] [b]]'), definition);
+    t.deepEqual(await readAll('@parallel[@branch a @branch b]'), definition);
+    t.deepEqual(await readAll('@parallel[@branch[a] @branch[b]]'), definition);
+    t.deepEqual(await readAll('@parallel[a b]'), definition);
+    t.deepEqual(await readAll('@parallel[[a] [b]]'), definition);
 });
 
 test('parallel 2', async t => {
@@ -200,28 +184,52 @@ test('parallel 2', async t => {
             }
         }
     };
-    t.deepEqual(await readAll([
-        '[[a aa] b]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '[[a aa] [b]]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '@parallel[@branch [a aa] b]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '@parallel[@branch [a aa] @branch b]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '@parallel[@branch[a aa] @branch[b]]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '@parallel[[a aa] @branch[b]]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '@parallel[[a aa] b]'
-    ]), definition);
-    t.deepEqual(await readAll([
-        '@parallel[[a aa] [b]]'
-    ]), definition);
+    t.deepEqual(await readAll('[[a aa] b]'), definition);
+    t.deepEqual(await readAll('[[a aa] [b]]'), definition);
+    t.deepEqual(await readAll('@parallel[@branch [a aa] b]'), definition);
+    t.deepEqual(await readAll('@parallel[@branch [a aa] @branch b]'), definition);
+    t.deepEqual(await readAll('@parallel[@branch[a aa] @branch[b]]'), definition);
+    t.deepEqual(await readAll('@parallel[[a aa] @branch[b]]'), definition);
+    t.deepEqual(await readAll('@parallel[[a aa] b]'), definition);
+    t.deepEqual(await readAll('@parallel[[a aa] [b]]'), definition);
+});
+
+test('choices so many choices', async t => {
+    const definition = {
+        StartAt: 'a',
+        States: {
+            a: {
+                Type: 'Task',
+                Resource: 'a',
+                ResultPath: '$.a',
+                Next: 'choice-1'
+            },
+            'choice-1': {
+                Type: 'Choice',
+                Choices: [{
+                    Variable: '$.foo',
+                    StringEquals: 'bar',
+                    Next: 'b'
+                },{
+                    // TODO: fix
+                    Variable: '$.foo',
+                    NumericEquals: 'bar',
+                    Next: 'b'
+                },{
+                    // TODO: fix
+                    Variable: '$.foo',
+                    BooleanEquals: 'bar',
+                    Next: 'b'
+                },{
+                    // TODO: fix
+                    Variable: '$.foo',
+                    Variable: '$.foo',
+                    TimestampEquals: 'bar',
+                    Next: 'b'
+                }],
+                Default: 'c'
+            }
+        }
+    };
+    t.deepEqual(await readAll('a @if[[$.foo = bar] b c]'), definition);
 });
