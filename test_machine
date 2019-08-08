@@ -2,7 +2,7 @@ foo
 bar
 baz
 [[a b][c d]]
-@if[[$.foo >= bar]
+@if[[$.foo >= 123]
   foo
   boom]
 boom
