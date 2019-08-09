@@ -18,21 +18,22 @@ to mask the notoriously bitter aftertaste.
 Let's say you saved the following to a file called `state-machine.pdn`...
 
 ```
-'arn:aws:lambda:us-east-1:12345679:function:foo'
-'arn:aws:lambda:us-east-1:12345679:function:bar'
+arn:aws:lambda:us-east-1:12345679:function:foo
+arn:aws:lambda:us-east-1:12345679:function:bar
 [
   [
-    'arn:aws:states:us-east-1:12345679:activity:a'
-    'arn:aws:lambda:us-east-1:12345679:function:a'
+    arn:aws:states:us-east-1:12345679:activity:a
+    arn:aws:lambda:us-east-1:12345679:function:a
   ]
   [
-    @catch [ 'arn:aws:states:us-east-1:12345679:activity:c', boom ]
-    'arn:aws:states:us-east-1:12345679:activity:d'
+    arn:aws:states:us-east-1:12345679:activity:c
+    @catch [ arn:aws:states:us-east-1:12345679:activity:d, arn:aws:states:us-east-1:12345679:activity:c ]
+    arn:aws:states:us-east-1:12345679:activity:e
   ]
 ]
 @if [
   [$.foo >= 1565317676]
-  'arn:aws:lambda:us-east-1:12345679:function:foo'
+  arn:aws:lambda:us-east-1:12345679:function:foo
   boom
 ]
 @fail boom
@@ -89,21 +90,27 @@ Well, if you did that, you'd get the following:
               "Type": "Task",
               "Resource": "arn:aws:states:us-east-1:12345679:activity:c",
               "ResultPath": "$.c",
-              "Catch": [
-                {
-                  "ErrorEqual": [
-                    "States.ALL"
-                  ],
-                  "ResultPath": "$.c-error",
-                  "Next": "boom"
-                }
-              ],
               "Next": "d"
             },
             "d": {
               "Type": "Task",
               "Resource": "arn:aws:states:us-east-1:12345679:activity:d",
               "ResultPath": "$.d",
+              "Catch": [
+                {
+                  "ErrorEqual": [
+                    "States.ALL"
+                  ],
+                  "ResultPath": "$.d-error",
+                  "Next": "c"
+                }
+              ],
+              "Next": "e"
+            },
+            "e": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:us-east-1:12345679:activity:e",
+              "ResultPath": "$.e",
               "End": true
             }
           }
