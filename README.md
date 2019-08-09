@@ -1,4 +1,4 @@
-# ![State of the Arg](sota.png?raw=true)
+# ![State of the Arg](sota.png?raw=true&sanitize=true)
 
 > sugary-sweet state machine syntax
 
