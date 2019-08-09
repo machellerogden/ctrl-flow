@@ -10,6 +10,10 @@
     "test": "ava test/*.spec.js",
     "watch": "npm run test -- --watch"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/machellerogden/sota.git"
+  },
   "keywords": [],
   "author": "Mac Heller-Ogden",
   "license": "MIT",
