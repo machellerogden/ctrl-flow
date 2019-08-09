@@ -2,6 +2,8 @@
 
 > sugary-sweet state machine syntax
 
+**Warning: this is an early stage work-in-progress and is under heavy development.**
+
 # install
 
 ```sh
