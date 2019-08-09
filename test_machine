@@ -7,7 +7,10 @@ arn:aws:lambda:us-east-1:12345679:function:bar
   ]
   [
     arn:aws:states:us-east-1:12345679:activity:c
-    @catch [ arn:aws:states:us-east-1:12345679:activity:d, arn:aws:states:us-east-1:12345679:activity:c ]
+    @catch [
+      arn:aws:states:us-east-1:12345679:activity:d
+      arn:aws:states:us-east-1:12345679:activity:c
+    ]
     arn:aws:states:us-east-1:12345679:activity:e
   ]
 ]
