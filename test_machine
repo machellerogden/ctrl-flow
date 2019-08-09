@@ -5,7 +5,7 @@
 [
   [
     'arn:aws:states:us-east-1:12345679:activity:a'
-    'arn:aws:states:us-east-1:12345679:activity:b'
+    'arn:aws:lambda:us-east-1:12345679:function:a'
   ]
   [
     @catch [ 'arn:aws:states:us-east-1:12345679:activity:c', boom ]
