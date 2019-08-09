@@ -23,10 +23,10 @@ Let's say you saved the following to a file called `state-machine.pdn`...
 [
   [
     'arn:aws:states:us-east-1:12345679:activity:a'
-    'arn:aws:states:us-east-1:12345679:activity:b'
+    'arn:aws:lambda:us-east-1:12345679:function:a'
   ]
   [
-    'arn:aws:states:us-east-1:12345679:activity:c'
+    @catch [ 'arn:aws:states:us-east-1:12345679:activity:c', boom ]
     'arn:aws:states:us-east-1:12345679:activity:d'
   ]
 ]
@@ -48,53 +48,62 @@ Well, if you did that, you'd get the following:
 
 ```json
 {
-  "StartAt": "arn:aws:lambda:us-east-1:12345679:function:foo",
+  "StartAt": "foo-1",
   "States": {
-    "arn:aws:lambda:us-east-1:12345679:function:foo": {
+    "foo-1": {
       "Type": "Task",
       "Resource": "arn:aws:lambda:us-east-1:12345679:function:foo",
-      "ResultPath": "$.arn:aws:lambda:us-east-1:12345679:function:foo",
-      "Next": "arn:aws:lambda:us-east-1:12345679:function:bar"
+      "ResultPath": "$.foo-1",
+      "Next": "bar-1"
     },
-    "arn:aws:lambda:us-east-1:12345679:function:bar": {
+    "bar-1": {
       "Type": "Task",
       "Resource": "arn:aws:lambda:us-east-1:12345679:function:bar",
-      "ResultPath": "$.arn:aws:lambda:us-east-1:12345679:function:bar",
+      "ResultPath": "$.bar-1",
       "Next": "parallel-1"
     },
     "parallel-1": {
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "arn:aws:states:us-east-1:12345679:activity:a",
+          "StartAt": "a-1",
           "States": {
-            "arn:aws:states:us-east-1:12345679:activity:a": {
+            "a-1": {
               "Type": "Task",
               "Resource": "arn:aws:states:us-east-1:12345679:activity:a",
-              "ResultPath": "$.arn:aws:states:us-east-1:12345679:activity:a",
-              "Next": "arn:aws:states:us-east-1:12345679:activity:b"
+              "ResultPath": "$.a-1",
+              "Next": "a-2"
             },
-            "arn:aws:states:us-east-1:12345679:activity:b": {
+            "a-2": {
               "Type": "Task",
-              "Resource": "arn:aws:states:us-east-1:12345679:activity:b",
-              "ResultPath": "$.arn:aws:states:us-east-1:12345679:activity:b",
+              "Resource": "arn:aws:lambda:us-east-1:12345679:function:a",
+              "ResultPath": "$.a-2",
               "End": true
             }
           }
         },
         {
-          "StartAt": "arn:aws:states:us-east-1:12345679:activity:c",
+          "StartAt": "c-1",
           "States": {
-            "arn:aws:states:us-east-1:12345679:activity:c": {
+            "c-1": {
               "Type": "Task",
               "Resource": "arn:aws:states:us-east-1:12345679:activity:c",
-              "ResultPath": "$.arn:aws:states:us-east-1:12345679:activity:c",
-              "Next": "arn:aws:states:us-east-1:12345679:activity:d"
+              "ResultPath": "$.c-1",
+              "Catch": [
+                {
+                  "ErrorEqual": [
+                    "States.ALL"
+                  ],
+                  "ResultPath": "$.c-1-error",
+                  "Next": "boom"
+                }
+              ],
+              "Next": "d-1"
             },
-            "arn:aws:states:us-east-1:12345679:activity:d": {
+            "d-1": {
               "Type": "Task",
               "Resource": "arn:aws:states:us-east-1:12345679:activity:d",
-              "ResultPath": "$.arn:aws:states:us-east-1:12345679:activity:d",
+              "ResultPath": "$.d-1",
               "End": true
             }
           }
@@ -108,17 +117,17 @@ Well, if you did that, you'd get the following:
         {
           "Variable": "$.foo",
           "StringGreaterThanEquals": "1565317676",
-          "Next": "arn:aws:lambda:us-east-1:12345679:function:foo"
+          "Next": "foo-1"
         },
         {
           "Variable": "$.foo",
           "NumericGreaterThanEquals": 1565317676,
-          "Next": "arn:aws:lambda:us-east-1:12345679:function:foo"
+          "Next": "foo-1"
         },
         {
           "Variable": "$.foo",
           "TimestampGreaterThanEquals": 1565317676,
-          "Next": "arn:aws:lambda:us-east-1:12345679:function:foo"
+          "Next": "foo-1"
         }
       ],
       "Default": "boom"
