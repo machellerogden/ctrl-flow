@@ -1,8 +1,22 @@
-foo
-bar
-baz
-[[a b][c d]]
-@if[[$.foo >= 123]
-  foo
-  boom]
-boom
+'arn:aws:lambda:us-east-1:12345679:function:foo'
+
+'arn:aws:lambda:us-east-1:12345679:function:bar'
+
+[
+  [
+    'arn:aws:states:us-east-1:12345679:activity:a'
+    'arn:aws:states:us-east-1:12345679:activity:b'
+  ]
+  [
+    'arn:aws:states:us-east-1:12345679:activity:c'
+    'arn:aws:states:us-east-1:12345679:activity:d'
+  ]
+]
+
+@if [
+  [$.foo >= 1565317676]
+  'arn:aws:lambda:us-east-1:12345679:function:foo'
+  boom
+]
+
+@fail boom
