@@ -210,22 +210,6 @@ test('choices so many choices', async t => {
                     Variable: '$.foo',
                     StringEquals: 'bar',
                     Next: 'b'
-                },{
-                    // TODO: fix
-                    Variable: '$.foo',
-                    NumericEquals: 'bar',
-                    Next: 'b'
-                },{
-                    // TODO: fix
-                    Variable: '$.foo',
-                    BooleanEquals: 'bar',
-                    Next: 'b'
-                },{
-                    // TODO: fix
-                    Variable: '$.foo',
-                    Variable: '$.foo',
-                    TimestampEquals: 'bar',
-                    Next: 'b'
                 }],
                 Default: 'c'
             }
