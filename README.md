@@ -48,86 +48,86 @@ Well, if you did that, you'd get the following:
 
 ```json
 {
-  "StartAt": "foo-1",
+  "StartAt": "foo",
   "States": {
-    "foo-1": {
+    "foo": {
       "Type": "Task",
       "Resource": "arn:aws:lambda:us-east-1:12345679:function:foo",
-      "ResultPath": "$.foo-1",
-      "Next": "bar-1"
+      "ResultPath": "$.foo",
+      "Next": "bar"
     },
-    "bar-1": {
+    "bar": {
       "Type": "Task",
       "Resource": "arn:aws:lambda:us-east-1:12345679:function:bar",
-      "ResultPath": "$.bar-1",
-      "Next": "parallel-1"
+      "ResultPath": "$.bar",
+      "Next": "parallel"
     },
-    "parallel-1": {
+    "parallel": {
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "a-1",
+          "StartAt": "a",
           "States": {
-            "a-1": {
+            "a": {
               "Type": "Task",
               "Resource": "arn:aws:states:us-east-1:12345679:activity:a",
-              "ResultPath": "$.a-1",
-              "Next": "a-2"
+              "ResultPath": "$.a",
+              "Next": "a-1"
             },
-            "a-2": {
+            "a-1": {
               "Type": "Task",
               "Resource": "arn:aws:lambda:us-east-1:12345679:function:a",
-              "ResultPath": "$.a-2",
+              "ResultPath": "$.a-1",
               "End": true
             }
           }
         },
         {
-          "StartAt": "c-1",
+          "StartAt": "c",
           "States": {
-            "c-1": {
+            "c": {
               "Type": "Task",
               "Resource": "arn:aws:states:us-east-1:12345679:activity:c",
-              "ResultPath": "$.c-1",
+              "ResultPath": "$.c",
               "Catch": [
                 {
                   "ErrorEqual": [
                     "States.ALL"
                   ],
-                  "ResultPath": "$.c-1-error",
+                  "ResultPath": "$.c-error",
                   "Next": "boom"
                 }
               ],
-              "Next": "d-1"
+              "Next": "d"
             },
-            "d-1": {
+            "d": {
               "Type": "Task",
               "Resource": "arn:aws:states:us-east-1:12345679:activity:d",
-              "ResultPath": "$.d-1",
+              "ResultPath": "$.d",
               "End": true
             }
           }
         }
       ],
-      "Next": "choice-1"
+      "Next": "choice"
     },
-    "choice-1": {
+    "choice": {
       "Type": "Choice",
       "Choices": [
         {
           "Variable": "$.foo",
           "StringGreaterThanEquals": "1565317676",
-          "Next": "foo-1"
+          "Next": "foo"
         },
         {
           "Variable": "$.foo",
           "NumericGreaterThanEquals": 1565317676,
-          "Next": "foo-1"
+          "Next": "foo"
         },
         {
           "Variable": "$.foo",
           "TimestampGreaterThanEquals": 1565317676,
-          "Next": "foo-1"
+          "Next": "foo"
         }
       ],
       "Default": "boom"
