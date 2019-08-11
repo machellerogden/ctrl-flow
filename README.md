@@ -27,11 +27,13 @@ arn:aws:lambda:us-east-1:12345679:function:bar
   ]
   [
     arn:aws:states:us-east-1:12345679:activity:c
-    @catch [
+    @try [
       arn:aws:states:us-east-1:12345679:activity:d
       arn:aws:states:us-east-1:12345679:activity:c
     ]
-    arn:aws:states:us-east-1:12345679:activity:e
+    @retry [
+      arn:aws:states:us-east-1:12345679:activity:e
+    ]
   ]
 ]
 @if [
@@ -114,6 +116,16 @@ Well, if you did that, you'd get the following:
               "Type": "Task",
               "Resource": "arn:aws:states:us-east-1:12345679:activity:e",
               "ResultPath": "$.e",
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "MaxAttempts": 3,
+                  "IntervalSeconds": 1,
+                  "BackoffRate": 1
+                }
+              ],
               "End": true
             }
           }
