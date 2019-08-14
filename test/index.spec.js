@@ -14,19 +14,16 @@ test('simple strings are turned into tasks', async t => {
             a: {
                 Type: 'Task',
                 Resource: 'a',
-                ResultPath: '$.a',
                 Next: 'b'
             },
             b: {
                 Type: 'Task',
                 Resource: 'b',
-                ResultPath: '$.b',
                 Next: 'c'
             },
             c: {
                 Type: 'Task',
                 Resource: 'c',
-                ResultPath: '$.c',
                 End: true
             }
         }
@@ -94,17 +91,17 @@ test('you can use shorthand on properties', async t => {
         }
     };
     t.deepEqual(await readAll([
-        '@state{n: a, t: Task, r: $.a}',
-        '@state{n: b, t: Task, r: $.b}',
-        '@state{n: c, t: Task, r: $.c}'
+        '@state{n: a, t: Task, result: $.a}',
+        '@state{n: b, t: Task, result: $.b}',
+        '@state{n: c, t: Task, result: $.c}'
     ]), definition);
 });
 
 test('parallel', async t => {
     const definition = {
-        StartAt: 'parallel-1',
+        StartAt: 'parallel',
         States: {
-            'parallel-1': {
+            'parallel': {
                 Type: 'Parallel',
                 Branches: [
                     {
@@ -113,7 +110,6 @@ test('parallel', async t => {
                             a: {
                                 Type: 'Task',
                                 Resource: 'a',
-                                ResultPath: '$.a',
                                 End: true
                             }
                         }
@@ -124,7 +120,6 @@ test('parallel', async t => {
                             b: {
                                 Type: 'Task',
                                 Resource: 'b',
-                                ResultPath: '$.b',
                                 End: true
                             }
                         }
@@ -146,9 +141,9 @@ test('parallel', async t => {
 
 test('parallel 2', async t => {
     const definition = {
-        StartAt: 'parallel-1',
+        StartAt: 'parallel',
         States: {
-            'parallel-1': {
+            'parallel': {
                 Type: 'Parallel',
                 Branches: [
                     {
@@ -157,13 +152,11 @@ test('parallel 2', async t => {
                             a: {
                                 Type: 'Task',
                                 Resource: 'a',
-                                ResultPath: '$.a',
                                 Next: 'aa'
                             },
                             aa: {
                                 Type: 'Task',
                                 Resource: 'aa',
-                                ResultPath: '$.aa',
                                 End: true
                             }
                         }
@@ -174,7 +167,6 @@ test('parallel 2', async t => {
                             b: {
                                 Type: 'Task',
                                 Resource: 'b',
-                                ResultPath: '$.b',
                                 End: true
                             }
                         }
@@ -201,10 +193,9 @@ test('choices so many choices', async t => {
             a: {
                 Type: 'Task',
                 Resource: 'a',
-                ResultPath: '$.a',
-                Next: 'choice-1'
+                Next: 'choice'
             },
-            'choice-1': {
+            'choice': {
                 Type: 'Choice',
                 Choices: [{
                     Variable: '$.foo',
