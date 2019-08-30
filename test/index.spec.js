@@ -208,3 +208,85 @@ test('choices so many choices', async t => {
     };
     t.deepEqual(await readAll('a @if[[$.foo = bar] b c]'), definition);
 });
+
+test('a machine is a machine is a machine', async t => {
+    const input = JSON.stringify({
+        StartAt: 'a',
+        States: {
+            a: {
+                Type: 'Task',
+                Resource: 'a',
+                Next: 'choice'
+            },
+            'choice': {
+                Type: 'Choice',
+                Choices: [{
+                    Variable: '$.foo',
+                    StringEquals: 'bar',
+                    Next: 'b'
+                }],
+                Default: 'c'
+            }
+        }
+    });
+    const output = {
+        StartAt: 'a',
+        States: {
+            a: {
+                Type: 'Task',
+                Resource: 'a',
+                Next: 'choice'
+            },
+            'choice': {
+                Type: 'Choice',
+                Choices: [{
+                    Variable: '$.foo',
+                    StringEquals: 'bar',
+                    Next: 'b'
+                }],
+                Default: 'c'
+            }
+        }
+    };
+    t.deepEqual(await readAll(input), output);
+});
+
+test('a simple machine is a machine is a machine', async t => {
+    const input = `
+    {
+        Name 'a'
+        Type 'Task'
+        Resource 'a'
+        Next 'choice'
+    }
+    {
+        Name 'choice'
+        Type 'Choice'
+        Choices [{
+            Variable '$.foo'
+            StringEquals 'bar'
+            Next: 'b'
+        }]
+        Default: 'c'
+    }`;
+    const output = {
+        StartAt: 'a',
+        States: {
+            a: {
+                Type: 'Task',
+                Resource: 'a',
+                Next: 'choice'
+            },
+            'choice': {
+                Type: 'Choice',
+                Choices: [{
+                    Variable: '$.foo',
+                    StringEquals: 'bar',
+                    Next: 'b'
+                }],
+                Default: 'c'
+            }
+        }
+    };
+    t.deepEqual(await readAll(input), output);
+});
