@@ -290,3 +290,29 @@ test('a simple machine is a machine is a machine', async t => {
     };
     t.deepEqual(await readAll(input), output);
 });
+
+test.only('params', async t => {
+    const input = `
+    @params [
+        {
+            foo.$ $.bar
+            test params
+        }
+        arn:aws:foo
+    ]`;
+    const output = {
+        StartAt: 'foo',
+        States: {
+            foo: {
+                Type: 'Task',
+                Resource: 'arn:aws:foo',
+                Parameters: {
+                    'foo.$': '$.bar',
+                    test: 'params'
+                },
+                End: true
+            }
+        }
+    };
+    t.deepEqual(await readAll(input), output);
+});
