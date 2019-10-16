@@ -99,9 +99,9 @@ test('you can use shorthand on properties', async t => {
 
 test('parallel', async t => {
     const definition = {
-        StartAt: 'parallel',
+        StartAt: 'parallel_0',
         States: {
-            'parallel': {
+            'parallel_0': {
                 Type: 'Parallel',
                 Branches: [
                     {
@@ -141,9 +141,9 @@ test('parallel', async t => {
 
 test('parallel 2', async t => {
     const definition = {
-        StartAt: 'parallel',
+        StartAt: 'parallel_0',
         States: {
-            'parallel': {
+            'parallel_0': {
                 Type: 'Parallel',
                 Branches: [
                     {
@@ -193,9 +193,9 @@ test('choices so many choices', async t => {
             a: {
                 Type: 'Task',
                 Resource: 'a',
-                Next: 'choice'
+                Next: 'choice_0'
             },
-            'choice': {
+            'choice_0': {
                 Type: 'Choice',
                 Choices: [{
                     Variable: '$.foo',
@@ -216,9 +216,9 @@ test('a machine is a machine is a machine', async t => {
             a: {
                 Type: 'Task',
                 Resource: 'a',
-                Next: 'choice'
+                Next: 'choice_0'
             },
-            'choice': {
+            'choice_0': {
                 Type: 'Choice',
                 Choices: [{
                     Variable: '$.foo',
@@ -235,9 +235,9 @@ test('a machine is a machine is a machine', async t => {
             a: {
                 Type: 'Task',
                 Resource: 'a',
-                Next: 'choice'
+                Next: 'choice_0'
             },
-            'choice': {
+            'choice_0': {
                 Type: 'Choice',
                 Choices: [{
                     Variable: '$.foo',
@@ -291,9 +291,9 @@ test('a simple machine is a machine is a machine', async t => {
     t.deepEqual(await readAll(input), output);
 });
 
-test('params', async t => {
+test('state params', async t => {
     const input = `
-    @params [
+    @ [
         {
             foo.$ $.bar
             test params
@@ -301,9 +301,9 @@ test('params', async t => {
         arn:aws:foo
     ]`;
     const output = {
-        StartAt: 'foo',
+        StartAt: 'foo_0',
         States: {
-            foo: {
+            foo_0: {
                 Type: 'Task',
                 Resource: 'arn:aws:foo',
                 Parameters: {
