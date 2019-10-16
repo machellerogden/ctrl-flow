@@ -301,9 +301,9 @@ test('state params', async t => {
         arn:aws:foo
     ]`;
     const output = {
-        StartAt: 'foo_0',
+        StartAt: 'foo',
         States: {
-            foo_0: {
+            foo: {
                 Type: 'Task',
                 Resource: 'arn:aws:foo',
                 Parameters: {
