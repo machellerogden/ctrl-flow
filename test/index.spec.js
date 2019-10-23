@@ -341,10 +341,13 @@ test('resolver works', async t => {
         }
     };
 
-    function MockResolver() {
-        let count = 0;
-        let results = [ 'faa', 'bor', 'boz' ];
-        return () => Promise.resolve(results[count++]);
+    function MockResolver(arg) {
+        let map = {
+            foo: 'faa',
+            bar: 'bor',
+            baz: 'boz'
+        };
+        return arg => Promise.resolve(map[arg]);
     }
 
     t.deepEqual(await readAll(input, { resolver: MockResolver() }), output);
