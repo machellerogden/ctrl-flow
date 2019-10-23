@@ -316,3 +316,28 @@ test('state params', async t => {
     };
     t.deepEqual(await readAll(input), output);
 });
+
+test('resolver works', async t => {
+    const input = `foo bar baz`;
+    const output = {
+        StartAt: 'foo',
+        States: {
+            foo: {
+                Type: 'Task',
+                Resource: 'foo',
+                Next: 'bar'
+            },
+            bar: {
+                Type: 'Task',
+                Resource: 'bar',
+                Next: 'baz'
+            },
+            baz: {
+                Type: 'Task',
+                Resource: 'baz',
+                End: true
+            }
+        }
+    };
+    t.deepEqual(await readAll(input, { resolver: () => 'aaa'}), output);
+});
