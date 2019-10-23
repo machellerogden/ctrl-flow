@@ -319,25 +319,33 @@ test('state params', async t => {
 
 test('resolver works', async t => {
     const input = `foo bar baz`;
+
     const output = {
-        StartAt: 'foo',
+        StartAt: 'faa',
         States: {
-            foo: {
+            faa: {
                 Type: 'Task',
-                Resource: 'foo',
-                Next: 'bar'
+                Resource: 'faa',
+                Next: 'bor'
             },
-            bar: {
+            bor: {
                 Type: 'Task',
-                Resource: 'bar',
-                Next: 'baz'
+                Resource: 'bor',
+                Next: 'boz'
             },
-            baz: {
+            boz: {
                 Type: 'Task',
-                Resource: 'baz',
+                Resource: 'boz',
                 End: true
             }
         }
     };
-    t.deepEqual(await readAll(input, { resolver: () => 'aaa'}), output);
+
+    function MockResolver() {
+        let count = 0;
+        let results = [ 'faa', 'bor', 'boz' ];
+        return () => Promise.resolve(results[count++]);
+    }
+
+    t.deepEqual(await readAll(input, { resolver: MockResolver() }), output);
 });
