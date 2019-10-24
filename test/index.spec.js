@@ -344,7 +344,7 @@ test('resolver works', async t => {
                         }
                     }
                 ],
-                ResultPath: '$.0',
+                OutputPath: '$.0',
                 Next: 'bor'
             },
             bor: {
