@@ -321,11 +321,30 @@ test('resolver works', async t => {
     const input = `foo bar baz`;
 
     const output = {
-        StartAt: 'faa',
+        StartAt: 'parallel_0',
         States: {
-            faa: {
-                Type: 'Task',
-                Resource: 'faa',
+            parallel_0: {
+                Type: 'Parallel',
+                Branches: [
+                    {
+                        StartAt: 'a',
+                        States: {
+                            a: {
+                                Type: 'Pass',
+                                Next: 'b'
+                            },
+                            b: {
+                                Type: 'Pass',
+                                Next: 'c'
+                            },
+                            c: {
+                                Type: 'Pass',
+                                End: true
+                            }
+                        }
+                    }
+                ],
+                ResultPath: '$.0',
                 Next: 'bor'
             },
             bor: {
@@ -343,7 +362,23 @@ test('resolver works', async t => {
 
     function MockResolver(arg) {
         let map = {
-            foo: 'faa',
+            foo: {
+                StartAt: 'a',
+                States: {
+                    a: {
+                        Type: 'Pass',
+                        Next: 'b'
+                    },
+                    b: {
+                        Type: 'Pass',
+                        Next: 'c'
+                    },
+                    c: {
+                        Type: 'Pass',
+                        End: true
+                    }
+                }
+            },
             bar: 'bor',
             baz: 'boz'
         };
