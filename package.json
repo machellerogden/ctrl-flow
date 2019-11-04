@@ -19,7 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "is-ci": "2.0.0",
-    "pdn": "0.3.12",
+    "pdn": "0.3.13",
     "streamface": "0.0.0"
   },
   "devDependencies": {
