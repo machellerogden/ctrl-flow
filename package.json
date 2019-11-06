@@ -20,7 +20,7 @@
   "dependencies": {
     "is-ci": "2.0.0",
     "pdn": "0.3.14",
-    "streamface": "0.0.0"
+    "streamface": "0.0.2"
   },
   "devDependencies": {
     "ava": "^2.2.0",

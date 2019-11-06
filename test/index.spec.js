@@ -321,9 +321,9 @@ test('resolver works', async t => {
     const input = `foo bar baz`;
 
     const output = {
-        StartAt: 'parallel_0',
+        StartAt: 'foo_0',
         States: {
-            parallel_0: {
+            foo_0: {
                 Type: 'Parallel',
                 Branches: [
                     {
@@ -344,7 +344,7 @@ test('resolver works', async t => {
                         }
                     }
                 ],
-                OutputPath: '$.0',
+                OutputPath: '$.0[-1:]',
                 Next: 'bor'
             },
             bor: {
