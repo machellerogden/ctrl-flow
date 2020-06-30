@@ -1,6 +1,6 @@
 {
   "name": "sota",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "argv->state-machine",
   "bin": {
     "sota": "index.js"
