@@ -7,7 +7,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "ava test/*.spec.mjs",
+    "test": "ava test/*.spec.js",
     "watch": "npm run test -- --watch"
   },
   "repository": {

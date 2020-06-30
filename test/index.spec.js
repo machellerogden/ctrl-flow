@@ -1,8 +1,8 @@
 'use strict';
 
-import test from 'ava';
-import sinon from 'sinon';
-import { readAll } from '..';
+const test = require('ava');
+const sinon = require('sinon');
+const { readAll } = require('..');
 
 test.beforeEach(t => t.context = { sandbox: sinon.createSandbox() });
 test.afterEach(t => t.context.sandbox.restore());
