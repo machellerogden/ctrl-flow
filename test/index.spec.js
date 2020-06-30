@@ -9,19 +9,19 @@ test.afterEach(t => t.context.sandbox.restore());
 
 test('simple strings are turned into tasks', async t => {
     const definition = {
-        StartAt: 'a',
+        StartAt: 'a_0',
         States: {
-            a: {
+            a_0: {
                 Type: 'Task',
                 Resource: 'a',
-                Next: 'b'
+                Next: 'b_0'
             },
-            b: {
+            b_0: {
                 Type: 'Task',
                 Resource: 'b',
-                Next: 'c'
+                Next: 'c_0'
             },
-            c: {
+            c_0: {
                 Type: 'Task',
                 Resource: 'c',
                 End: true
@@ -105,9 +105,9 @@ test('parallel', async t => {
                 Type: 'Parallel',
                 Branches: [
                     {
-                        StartAt: 'a',
+                        StartAt: 'a_0',
                         States: {
-                            a: {
+                            a_0: {
                                 Type: 'Task',
                                 Resource: 'a',
                                 End: true
@@ -115,9 +115,9 @@ test('parallel', async t => {
                         }
                     },
                     {
-                        StartAt: 'b',
+                        StartAt: 'b_0',
                         States: {
-                            b: {
+                            b_0: {
                                 Type: 'Task',
                                 Resource: 'b',
                                 End: true
@@ -129,10 +129,10 @@ test('parallel', async t => {
             }
         }
     };
-    t.deepEqual(await readAll('[a b]'), definition);
-    t.deepEqual(await readAll('[a [b]]'), definition);
-    t.deepEqual(await readAll('[[a] b]'), definition);
-    t.deepEqual(await readAll('[[a] [b]]'), definition);
+    t.deepEqual(await readAll('@= [a b]'), definition);
+    t.deepEqual(await readAll('@= [a [b]]'), definition);
+    t.deepEqual(await readAll('@= [[a] b]'), definition);
+    t.deepEqual(await readAll('@= [[a] [b]]'), definition);
     t.deepEqual(await readAll('@parallel[@branch a @branch b]'), definition);
     t.deepEqual(await readAll('@parallel[@branch[a] @branch[b]]'), definition);
     t.deepEqual(await readAll('@parallel[a b]'), definition);
@@ -147,14 +147,14 @@ test('parallel 2', async t => {
                 Type: 'Parallel',
                 Branches: [
                     {
-                        StartAt: 'a',
+                        StartAt: 'a_0',
                         States: {
-                            a: {
+                            a_0: {
                                 Type: 'Task',
                                 Resource: 'a',
-                                Next: 'aa'
+                                Next: 'aa_0'
                             },
-                            aa: {
+                            aa_0: {
                                 Type: 'Task',
                                 Resource: 'aa',
                                 End: true
@@ -162,9 +162,9 @@ test('parallel 2', async t => {
                         }
                     },
                     {
-                        StartAt: 'b',
+                        StartAt: 'b_0',
                         States: {
-                            b: {
+                            b_0: {
                                 Type: 'Task',
                                 Resource: 'b',
                                 End: true
@@ -176,8 +176,8 @@ test('parallel 2', async t => {
             }
         }
     };
-    t.deepEqual(await readAll('[[a aa] b]'), definition);
-    t.deepEqual(await readAll('[[a aa] [b]]'), definition);
+    t.deepEqual(await readAll('@= [[a aa] b]'), definition);
+    t.deepEqual(await readAll('@= [[a aa] [b]]'), definition);
     t.deepEqual(await readAll('@parallel[@branch [a aa] b]'), definition);
     t.deepEqual(await readAll('@parallel[@branch [a aa] @branch b]'), definition);
     t.deepEqual(await readAll('@parallel[@branch[a aa] @branch[b]]'), definition);
@@ -188,9 +188,9 @@ test('parallel 2', async t => {
 
 test('choices so many choices', async t => {
     const definition = {
-        StartAt: 'a',
+        StartAt: 'a_0',
         States: {
-            a: {
+            a_0: {
                 Type: 'Task',
                 Resource: 'a',
                 Next: 'choice_0'
@@ -293,7 +293,7 @@ test('a simple machine is a machine is a machine', async t => {
 
 test('state params', async t => {
     const input = `
-    @ [
+    @state [
         {
             foo.$ $.bar
             test params
@@ -301,9 +301,9 @@ test('state params', async t => {
         arn:aws:foo
     ]`;
     const output = {
-        StartAt: 'foo',
+        StartAt: 'foo_0',
         States: {
-            foo: {
+            foo_0: {
                 Type: 'Task',
                 Resource: 'arn:aws:foo',
                 Parameters: {
@@ -345,14 +345,14 @@ test('resolver works', async t => {
                     }
                 ],
                 OutputPath: '$.0[-1:]',
-                Next: 'bor'
+                Next: 'bor_0'
             },
-            bor: {
+            bor_0: {
                 Type: 'Task',
                 Resource: 'bor',
-                Next: 'boz'
+                Next: 'boz_0'
             },
-            boz: {
+            boz_0: {
                 Type: 'Task',
                 Resource: 'boz',
                 End: true
@@ -386,4 +386,104 @@ test('resolver works', async t => {
     }
 
     t.deepEqual(await readAll(input, { resolver: MockResolver() }), output);
+});
+
+test('reworking syntax', async t => {
+    const input =
+        `@= [
+            [ a b c ]
+            [ d e f ]
+        ]
+        @if [
+            [ $.foo = $.bar ]
+            bam_0
+            aaa_0
+        ]
+        @next [ bam blah_0 ]
+        @end blah
+        @next [ aaa boom_0 ]
+        @end boom`;
+    const output = {
+        "StartAt": "parallel_0",
+        "States": {
+            "parallel_0": {
+                "Type": "Parallel",
+                "Branches": [
+                    {
+                        "StartAt": "a_0",
+                        "States": {
+                            "a_0": {
+                                "Type": "Task",
+                                "Resource": "a",
+                                "Next": "b_0"
+                            },
+                            "b_0": {
+                                "Type": "Task",
+                                "Resource": "b",
+                                "Next": "c_0"
+                            },
+                            "c_0": {
+                                "Type": "Task",
+                                "Resource": "c",
+                                "End": true
+                            }
+                        }
+                    },
+                    {
+                        "StartAt": "d_0",
+                        "States": {
+                            "d_0": {
+                                "Type": "Task",
+                                "Resource": "d",
+                                "Next": "e_0"
+                            },
+                            "e_0": {
+                                "Type": "Task",
+                                "Resource": "e",
+                                "Next": "f_0"
+                            },
+                            "f_0": {
+                                "Type": "Task",
+                                "Resource": "f",
+                                "End": true
+                            }
+                        }
+                    }
+                ],
+                "Next": "choice_0"
+            },
+            "choice_0": {
+                "Type": "Choice",
+                "Choices": [
+                    {
+                        "Variable": "$.foo",
+                        "StringEquals": "$.bar",
+                        "Next": "bam_0"
+                    }
+                ],
+                "Default": "aaa_0"
+            },
+            "bam_0": {
+                "Type": "Task",
+                "Resource": "bam",
+                "Next": "blah_0"
+            },
+            "blah_0": {
+                "Type": "Task",
+                "Resource": "blah",
+                "End": true
+            },
+            "aaa_0": {
+                "Type": "Task",
+                "Resource": "aaa",
+                "Next": "boom_0"
+            },
+            "boom_0": {
+                "Type": "Task",
+                "Resource": "boom",
+                "End": true
+            }
+        }
+    }
+    t.deepEqual(await readAll(input), output);
 });
