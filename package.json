@@ -7,7 +7,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "ava test/*.spec.js",
+    "test": "ava test/*.spec.mjs",
     "watch": "npm run test -- --watch"
   },
   "repository": {
@@ -23,7 +23,7 @@
     "streamface": "0.0.3"
   },
   "devDependencies": {
-    "ava": "^2.2.0",
+    "ava": "^3.9.0",
     "sinon": "^7.3.2"
   }
 }
